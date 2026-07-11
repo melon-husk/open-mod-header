@@ -16,6 +16,7 @@ function App() {
   const [importError, setImportError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState<HeaderTarget>("request");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     loadState().then(setState);

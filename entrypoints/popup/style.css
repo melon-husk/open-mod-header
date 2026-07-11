@@ -30,9 +30,16 @@
 
   /* Effects */
   --scrim: rgba(15, 23, 42, 0.45);
-  --shadow-card: 0 10px 30px -12px rgba(15, 23, 42, 0.18);
-  --shadow-modal: 0 20px 50px -15px rgba(15, 23, 42, 0.5);
-  --shadow-tab: 0 1px 3px rgba(15, 23, 42, 0.14);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-modal: 0 16px 40px -12px rgba(15, 23, 42, 0.35);
+  --shadow-tab: 0 1px 2px rgba(15, 23, 42, 0.08);
+
+  /* Radius (tight two-step scale for a developer-tool feel) */
+  --r-control: 6px;
+  --r-surface: 8px;
+
+  /* Monospace for header data (names, values, counts) */
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
 
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.4;
@@ -74,7 +81,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 12px 14px;
   background: var(--card);
   border-bottom: 1px solid var(--border-subtle);
 }
@@ -166,10 +173,11 @@ body {
 
 /* ---- Card ---- */
 .card {
-  margin: 16px;
-  padding: 18px;
+  margin: 12px 10px;
+  padding: 12px;
   background: var(--card);
-  border-radius: 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-surface);
   box-shadow: var(--shadow-card);
   transition: opacity 0.18s ease;
 }
@@ -189,13 +197,14 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-control);
   background: var(--purple-soft);
   color: var(--purple-strong);
+  font-family: var(--mono);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .card-title {
@@ -217,7 +226,7 @@ body {
   color: var(--ink);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--r-control);
 }
 
 .title-input:hover {
@@ -246,7 +255,7 @@ body {
   color: var(--muted);
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-control);
   cursor: pointer;
   transition:
     color 0.15s ease,
@@ -273,7 +282,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 16px;
+  padding: 10px 14px;
   background: var(--card);
   border-bottom: 1px solid var(--border-subtle);
 }
@@ -296,7 +305,7 @@ body {
   color: var(--muted);
   background: var(--field);
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--r-control);
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
@@ -330,7 +339,7 @@ body {
   color: var(--purple-strong);
   background: transparent;
   border: 1px solid var(--purple-line);
-  border-radius: 8px;
+  border-radius: var(--r-control);
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -350,7 +359,7 @@ body {
   margin-bottom: 12px;
   padding: 4px;
   background: var(--field);
-  border-radius: 12px;
+  border-radius: var(--r-surface);
 }
 
 .tab {
@@ -366,7 +375,7 @@ body {
   color: var(--muted);
   background: transparent;
   border: none;
-  border-radius: 9px;
+  border-radius: var(--r-control);
   cursor: pointer;
   transition:
     color 0.15s ease,
@@ -391,11 +400,12 @@ body {
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
+  font-family: var(--mono);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--muted);
   background: var(--count-bg);
-  border-radius: 999px;
+  border-radius: var(--r-control);
 }
 
 .tab.active .tab-count {
@@ -405,8 +415,9 @@ body {
 
 /* ---- Section (tab panel) ---- */
 .section {
-  padding: 14px;
-  border-radius: 14px;
+  padding: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-surface);
   background: var(--panel);
 }
 
@@ -430,8 +441,11 @@ body {
 .col-labels {
   display: flex;
   gap: 10px;
-  padding: 0 42px 6px 30px;
-  font-size: 12px;
+  padding: 0 38px 6px 27px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--muted);
 }
 
@@ -451,7 +465,7 @@ body {
 
 .empty {
   margin: 2px 0 0;
-  padding: 4px 30px;
+  padding: 4px 27px;
   font-size: 13px;
   color: var(--muted);
 }
@@ -460,6 +474,13 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.row .name,
+.row .value {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: -0.01em;
 }
 
 .row .name {
@@ -479,7 +500,7 @@ input[type="text"] {
   color: var(--ink);
   background: var(--field);
   border: 1px solid var(--field-border);
-  border-radius: 9px;
+  border-radius: var(--r-control);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -506,7 +527,7 @@ input[type="text"]:disabled {
   color: var(--muted);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--r-control);
   cursor: pointer;
 }
 
@@ -536,7 +557,7 @@ input[type="checkbox"] {
   color: var(--muted);
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-control);
   cursor: pointer;
   transition:
     color 0.15s ease,
@@ -557,7 +578,7 @@ input[type="checkbox"] {
   color: var(--purple-strong);
   background: transparent;
   border: 1px dashed var(--purple-line);
-  border-radius: 9px;
+  border-radius: var(--r-control);
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -585,7 +606,7 @@ input[type="checkbox"] {
   max-width: 460px;
   padding: 20px;
   background: var(--card);
-  border-radius: 16px;
+  border-radius: var(--r-surface);
   box-shadow: var(--shadow-modal);
 }
 
@@ -609,7 +630,7 @@ input[type="checkbox"] {
   color: var(--ink);
   background: var(--field);
   border: 1px solid var(--field-border);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   resize: vertical;
 }
 
@@ -639,7 +660,7 @@ input[type="checkbox"] {
   color: #fff;
   background: var(--grad);
   border: none;
-  border-radius: 9px;
+  border-radius: var(--r-control);
   cursor: pointer;
   transition: filter 0.15s ease;
 }
