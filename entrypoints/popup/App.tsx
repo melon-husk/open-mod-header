@@ -1,56 +1,145 @@
-import { useEffect, useState } from "react";
-import type { HeaderRule, HeaderTarget, Profile } from "@/lib/types";
-import { createRuleId, loadProfile, saveProfile } from "@/lib/storage";
+import { useEffect, useMemo, useState } from "react";
+import type { AppState, HeaderRule, HeaderTarget, Profile } from "@/lib/types";
+import {
+  createId,
+  createProfile,
+  getActiveProfile,
+  loadState,
+  saveState,
+} from "@/lib/storage";
+import { exportProfiles, importProfiles } from "@/lib/modheader";
 
 function App() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [state, setState] = useState<AppState | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importError, setImportError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    loadProfile().then(setProfile);
+    loadState().then(setState);
   }, []);
 
+  const active = useMemo(
+    () => (state ? getActiveProfile(state) : undefined),
+    [state],
+  );
+
   // Persist on every change. Background listens to storage and re-syncs rules.
-  function update(next: Profile) {
-    setProfile(next);
-    saveProfile(next);
+  function commit(next: AppState) {
+    setState(next);
+    saveState(next);
   }
 
-  if (!profile) return <div className="loading">Loading…</div>;
+  if (!state || !active) return <div className="loading">Loading…</div>;
+
+  function updateActive(mutate: (profile: Profile) => Profile) {
+    commit({
+      ...state!,
+      profiles: state!.profiles.map((p) =>
+        p.id === active!.id ? mutate(p) : p,
+      ),
+    });
+  }
+
+  function switchProfile(id: string) {
+    commit({ ...state!, activeProfileId: id });
+  }
+
+  function newProfile() {
+    const profile = createProfile(`Profile ${state!.profiles.length + 1}`);
+    commit({
+      ...state!,
+      profiles: [...state!.profiles, profile],
+      activeProfileId: profile.id,
+    });
+  }
+
+  function duplicateProfile() {
+    const copy: Profile = {
+      id: createId(),
+      name: `${active!.name} copy`,
+      rules: active!.rules.map((r) => ({ ...r, id: createId() })),
+    };
+    commit({
+      ...state!,
+      profiles: [...state!.profiles, copy],
+      activeProfileId: copy.id,
+    });
+  }
+
+  function deleteProfile() {
+    if (state!.profiles.length <= 1) return;
+    const remaining = state!.profiles.filter((p) => p.id !== active!.id);
+    commit({
+      ...state!,
+      profiles: remaining,
+      activeProfileId: remaining[0].id,
+    });
+  }
+
+  function renameProfile(name: string) {
+    updateActive((p) => ({ ...p, name }));
+  }
 
   function addRule(target: HeaderTarget) {
     const rule: HeaderRule = {
-      id: createRuleId(),
+      id: createId(),
       enabled: true,
       target,
       op: "set",
       name: "",
       value: "",
     };
-    update({ ...profile!, rules: [...profile!.rules, rule] });
+    updateActive((p) => ({ ...p, rules: [...p.rules, rule] }));
   }
 
   function patchRule(id: string, patch: Partial<HeaderRule>) {
-    update({
-      ...profile!,
-      rules: profile!.rules.map((r) => (r.id === id ? { ...r, ...patch } : r)),
-    });
+    updateActive((p) => ({
+      ...p,
+      rules: p.rules.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    }));
   }
 
   function removeRule(id: string) {
-    update({ ...profile!, rules: profile!.rules.filter((r) => r.id !== id) });
+    updateActive((p) => ({ ...p, rules: p.rules.filter((r) => r.id !== id) }));
   }
 
   function setSectionEnabled(target: HeaderTarget, enabled: boolean) {
-    update({
-      ...profile!,
-      rules: profile!.rules.map((r) =>
-        r.target === target ? { ...r, enabled } : r,
-      ),
-    });
+    updateActive((p) => ({
+      ...p,
+      rules: p.rules.map((r) => (r.target === target ? { ...r, enabled } : r)),
+    }));
+  }
+
+  async function copyProfile() {
+    try {
+      await navigator.clipboard.writeText(exportProfiles([active!]));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  function runImport() {
+    try {
+      const imported = importProfiles(importText);
+      commit({
+        ...state!,
+        profiles: [...state!.profiles, ...imported],
+        activeProfileId: imported[0].id,
+      });
+      setImportOpen(false);
+      setImportText("");
+      setImportError(null);
+    } catch {
+      setImportError("Couldn't read that. Paste a valid ModHeader profile.");
+    }
   }
 
   function renderSection(target: HeaderTarget, title: string) {
-    const rows = profile!.rules.filter((r) => r.target === target);
+    const rows = active!.rules.filter((r) => r.target === target);
     const allOn = rows.length > 0 && rows.every((r) => r.enabled);
 
     return (
@@ -141,6 +230,8 @@ function App() {
     );
   }
 
+  const activeIndex = state.profiles.findIndex((p) => p.id === active.id);
+
   return (
     <div className="app">
       <header className="topbar">
@@ -153,27 +244,145 @@ function App() {
           <button
             type="button"
             role="switch"
-            aria-checked={profile.enabled}
-            className={`toggle ${profile.enabled ? "on" : ""}`}
-            onClick={() => update({ ...profile, enabled: !profile.enabled })}
+            aria-checked={state.globalEnabled}
+            className={`toggle ${state.globalEnabled ? "on" : ""}`}
+            onClick={() =>
+              commit({ ...state, globalEnabled: !state.globalEnabled })
+            }
           >
             <span className="knob" />
             <span className="toggle-text">
-              {profile.enabled ? "ON" : "OFF"}
+              {state.globalEnabled ? "ON" : "OFF"}
             </span>
           </button>
         </label>
       </header>
 
-      <main className={`card ${profile.enabled ? "" : "paused"}`}>
+      <nav className="profile-bar">
+        <div className="chips">
+          {state.profiles.map((p) => (
+            <button
+              key={p.id}
+              className={`chip ${p.id === active.id ? "active" : ""}`}
+              onClick={() => switchProfile(p.id)}
+              title={p.name}
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+        <div className="profile-bar-actions">
+          <button className="ghost-btn" onClick={newProfile}>
+            + New
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={() => {
+              setImportError(null);
+              setImportText("");
+              setImportOpen(true);
+            }}
+          >
+            Import
+          </button>
+        </div>
+      </nav>
+
+      <main className={`card ${state.globalEnabled ? "" : "paused"}`}>
         <div className="card-head">
-          <span className="profile-badge">1</span>
-          <h1 className="card-title">Profile 1</h1>
+          <span className="profile-badge">{activeIndex + 1}</span>
+          <input
+            className="title-input"
+            value={active.name}
+            onChange={(e) => renameProfile(e.target.value)}
+            aria-label="Profile name"
+          />
+          <div className="card-actions">
+            <button className="ghost-btn" onClick={copyProfile}>
+              {copied ? "Copied" : "Copy"}
+            </button>
+            <button
+              className="icon-action"
+              onClick={duplicateProfile}
+              title="Duplicate profile"
+              aria-label="Duplicate profile"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="9"
+                  y="9"
+                  width="11"
+                  height="11"
+                  rx="2"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+                <path
+                  d="M5 15V5a2 2 0 0 1 2-2h10"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+            <button
+              className="icon-action danger"
+              onClick={deleteProfile}
+              disabled={state.profiles.length <= 1}
+              title="Delete profile"
+              aria-label="Delete profile"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {renderSection("request", "Request headers")}
         {renderSection("response", "Response headers")}
       </main>
+
+      {importOpen && (
+        <div className="modal-backdrop" onClick={() => setImportOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Import profile</h3>
+            <p className="modal-hint">
+              Paste a ModHeader profile (or an Open Mod Header export).
+            </p>
+            <textarea
+              className="import-text"
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              placeholder='[{"headers":[…],"title":"Profile 1","version":2}]'
+              rows={6}
+              autoFocus
+            />
+            {importError && <p className="modal-error">{importError}</p>}
+            <div className="modal-actions">
+              <button
+                className="ghost-btn"
+                onClick={() => setImportOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="primary-btn"
+                onClick={runImport}
+                disabled={!importText.trim()}
+              >
+                Import
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

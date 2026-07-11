@@ -12,9 +12,17 @@ export interface HeaderRule {
 }
 
 export interface Profile {
-  /** Master toggle for the whole profile. */
-  enabled: boolean;
+  id: string;
+  name: string;
   rules: HeaderRule[];
 }
 
-export const STORAGE_KEY = "profile";
+export interface AppState {
+  /** Master on/off for the whole extension. */
+  globalEnabled: boolean;
+  /** id of the profile currently applied. */
+  activeProfileId: string;
+  profiles: Profile[];
+}
+
+export const STORAGE_KEY = "state";

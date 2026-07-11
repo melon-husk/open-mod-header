@@ -176,6 +176,145 @@ body {
   letter-spacing: -0.01em;
 }
 
+.title-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.title-input:hover {
+  border-color: var(--field-border);
+}
+
+.title-input:focus {
+  outline: none;
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px var(--purple-soft);
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.icon-action:hover:not(:disabled) {
+  color: var(--purple-strong);
+  background: var(--purple-soft);
+}
+
+.icon-action.danger:hover:not(:disabled) {
+  color: var(--danger);
+  background: #fde8e8;
+}
+
+.icon-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ---- Profile bar ---- */
+.profile-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--card);
+  border-bottom: 1px solid #eceaf5;
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1 1 auto;
+  scrollbar-width: thin;
+}
+
+.chip {
+  flex: 0 0 auto;
+  max-width: 160px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--field);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.chip:hover {
+  color: var(--purple-strong);
+}
+
+.chip.active {
+  color: var(--purple-strong);
+  background: var(--purple-soft);
+  border-color: #d6cdf6;
+}
+
+.profile-bar-actions {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.ghost-btn {
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--purple-strong);
+  background: transparent;
+  border: 1px solid #d6cdf6;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.ghost-btn:hover {
+  background: var(--purple-soft);
+  border-color: var(--purple);
+}
+
 /* ---- Section ---- */
 .section {
   padding: 14px;
@@ -341,6 +480,86 @@ input[type="checkbox"] {
 .add-row:hover {
   background: var(--purple-soft);
   border-color: var(--purple);
+}
+
+/* ---- Import modal ---- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(31, 27, 46, 0.4);
+}
+
+.modal {
+  width: 100%;
+  max-width: 460px;
+  padding: 20px;
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px -15px rgba(31, 27, 46, 0.5);
+}
+
+.modal-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.modal-hint {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.import-text {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--field-border);
+  border-radius: 10px;
+  resize: vertical;
+}
+
+.import-text:focus {
+  outline: none;
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px var(--purple-soft);
+}
+
+.modal-error {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.primary-btn {
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--purple), var(--purple-strong));
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,10 +1,10 @@
-import { loadProfile, onProfileChanged } from "@/lib/storage";
+import { loadState, onStateChanged } from "@/lib/storage";
 import { syncDynamicRules } from "@/lib/dnr";
 
 export default defineBackground(() => {
   // Apply saved rules on startup / install.
-  loadProfile().then(syncDynamicRules);
+  loadState().then(syncDynamicRules);
 
-  // Keep dynamic rules in sync whenever the profile changes.
-  onProfileChanged(syncDynamicRules);
+  // Keep dynamic rules in sync whenever the state changes.
+  onStateChanged(syncDynamicRules);
 });

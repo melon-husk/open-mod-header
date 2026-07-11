@@ -1,15 +1,19 @@
-import type { Profile } from "./types";
+import type { AppState } from "./types";
+import { getActiveProfile } from "./storage";
 
 /**
- * Translate our Profile into declarativeNetRequest dynamic rules.
+ * Translate the active profile into declarativeNetRequest dynamic rules.
  *
  * Each enabled header rule becomes one DNR rule with a single header
  * modification. Grouping is avoided for clarity and predictable rule IDs.
  */
-export function profileToDnrRules(
-  profile: Profile,
+export function stateToDnrRules(
+  state: AppState,
 ): chrome.declarativeNetRequest.Rule[] {
-  if (!profile.enabled) return [];
+  if (!state.globalEnabled) return [];
+
+  const profile = getActiveProfile(state);
+  if (!profile) return [];
 
   const rules: chrome.declarativeNetRequest.Rule[] = [];
   let nextId = 1;
@@ -50,12 +54,12 @@ export function profileToDnrRules(
 }
 
 /**
- * Replace all existing dynamic rules with the ones derived from the profile.
+ * Replace all existing dynamic rules with the ones derived from the state.
  */
-export async function syncDynamicRules(profile: Profile): Promise<void> {
+export async function syncDynamicRules(state: AppState): Promise<void> {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing.map((r) => r.id);
-  const addRules = profileToDnrRules(profile);
+  const addRules = stateToDnrRules(state);
 
   await chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds,
