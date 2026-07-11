@@ -280,7 +280,7 @@ function App() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-dot" />
-          <span className="brand-name">Open Mod Header</span>
+          <span className="brand-name">Open ModHeader</span>
         </div>
         <label className="global">
           <span className="global-label">Global</span>
@@ -470,7 +470,7 @@ function App() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">Import profile</h3>
             <p className="modal-hint">
-              Paste a ModHeader profile (or an Open Mod Header export).
+              Paste a ModHeader profile (or an Open ModHeader export).
             </p>
             <textarea
               className="import-text"

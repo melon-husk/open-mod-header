@@ -4,7 +4,7 @@ import { defineConfig } from "wxt";
 export default defineConfig({
   modules: ["@wxt-dev/module-react"],
   manifest: {
-    name: "Open Mod Header",
+    name: "Open ModHeader",
     description:
       "Open source tool to modify HTTP request and response headers. No tracking, no telemetry.",
     // declarativeNetRequest applies header rules in the browser itself, so the
