@@ -8,6 +8,7 @@ import {
   saveState,
 } from "@/lib/storage";
 import { exportProfiles, importProfiles } from "@/lib/modheader";
+import { PRESETS, presetToRules, type Preset } from "@/lib/presets";
 
 function App() {
   const [state, setState] = useState<AppState | null>(null);
@@ -16,6 +17,10 @@ function App() {
   const [importError, setImportError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState<HeaderTarget>("request");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [presetsOpen, setPresetsOpen] = useState(false);
 
   useEffect(() => {
     loadState().then(setState);
@@ -45,6 +50,17 @@ function App() {
 
   function switchProfile(id: string) {
     commit({ ...state!, activeProfileId: id });
+  }
+
+  function reorderProfiles(fromId: string, toId: string) {
+    if (fromId === toId) return;
+    const profiles = [...state!.profiles];
+    const from = profiles.findIndex((p) => p.id === fromId);
+    const to = profiles.findIndex((p) => p.id === toId);
+    if (from === -1 || to === -1) return;
+    const [moved] = profiles.splice(from, 1);
+    profiles.splice(to, 0, moved);
+    commit({ ...state!, profiles });
   }
 
   function newProfile() {
@@ -77,6 +93,7 @@ function App() {
       profiles: remaining,
       activeProfileId: remaining[0].id,
     });
+    setConfirmDelete(false);
   }
 
   function renameProfile(name: string) {
@@ -137,6 +154,25 @@ function App() {
     } catch {
       setImportError("Couldn't read that. Paste a valid ModHeader profile.");
     }
+  }
+
+  function applyPreset(preset: Preset) {
+    const additions = presetToRules(preset);
+    // Replace any existing rule with the same target + name (case-insensitive)
+    // so re-applying refreshes values instead of creating duplicates.
+    const conflict = (r: HeaderRule) =>
+      additions.some(
+        (a) =>
+          a.target === r.target &&
+          a.name.toLowerCase() === r.name.toLowerCase(),
+      );
+    updateActive((p) => ({
+      ...p,
+      rules: [...p.rules.filter((r) => !conflict(r)), ...additions],
+    }));
+    // Show the tab where the preset added headers.
+    setTab(additions[0]?.target ?? "request");
+    setPresetsOpen(false);
   }
 
   function renderPanel(target: HeaderTarget, title: string) {
@@ -270,15 +306,66 @@ function App() {
           {state.profiles.map((p) => (
             <button
               key={p.id}
-              className={`chip ${p.id === active.id ? "active" : ""}`}
+              className={`chip ${p.id === active.id ? "active" : ""} ${
+                dragId === p.id ? "dragging" : ""
+              } ${dragOverId === p.id ? "drag-over" : ""}`}
               onClick={() => switchProfile(p.id)}
               title={p.name}
+              draggable
+              onDragStart={() => setDragId(p.id)}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (dragId && dragId !== p.id) setDragOverId(p.id);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (dragId) reorderProfiles(dragId, p.id);
+                setDragId(null);
+                setDragOverId(null);
+              }}
+              onDragEnd={() => {
+                setDragId(null);
+                setDragOverId(null);
+              }}
             >
               {p.name}
             </button>
           ))}
         </div>
         <div className="profile-bar-actions">
+          <div className="presets">
+            <button
+              className="ghost-btn"
+              onClick={() => setPresetsOpen((o) => !o)}
+              aria-haspopup="menu"
+              aria-expanded={presetsOpen}
+            >
+              Presets
+            </button>
+            {presetsOpen && (
+              <>
+                <div
+                  className="menu-backdrop"
+                  onClick={() => setPresetsOpen(false)}
+                />
+                <div className="menu" role="menu">
+                  {PRESETS.map((preset) => (
+                    <button
+                      key={preset.id}
+                      className="menu-item"
+                      role="menuitem"
+                      onClick={() => applyPreset(preset)}
+                    >
+                      <span className="menu-item-name">{preset.name}</span>
+                      <span className="menu-item-desc">
+                        {preset.description}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <button className="ghost-btn" onClick={newProfile}>
             + New
           </button>
@@ -334,7 +421,7 @@ function App() {
             </button>
             <button
               className="icon-action danger"
-              onClick={deleteProfile}
+              onClick={() => setConfirmDelete(true)}
               disabled={state.profiles.length <= 1}
               title="Delete profile"
               aria-label="Delete profile"
@@ -407,6 +494,31 @@ function App() {
                 disabled={!importText.trim()}
               >
                 Import
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmDelete && (
+        <div className="modal-backdrop" onClick={() => setConfirmDelete(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Delete profile</h3>
+            <p className="modal-hint">
+              Delete <strong>{active.name}</strong> and its{" "}
+              {active.rules.length}{" "}
+              {active.rules.length === 1 ? "header" : "headers"}? This can't be
+              undone.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="ghost-btn"
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancel
+              </button>
+              <button className="danger-btn" onClick={deleteProfile} autoFocus>
+                Delete
               </button>
             </div>
           </div>
