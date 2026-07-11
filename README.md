@@ -61,3 +61,29 @@ pnpm compile      # typecheck
 
 Built with [WXT](https://wxt.dev) and React. Chrome (Manifest V3) is the current
 target.
+
+## Releasing
+
+Releases are fully automated with
+[semantic-release](https://semantic-release.gitbook.io/). Every push to `main`
+runs the [release workflow](.github/workflows/release.yml), which inspects the
+commit messages since the last release and decides what to publish.
+
+Versioning follows [Conventional Commits](https://www.conventionalcommits.org/):
+
+| Commit type                                | Release             |
+| ------------------------------------------ | ------------------- |
+| `fix:`                                     | Patch (`1.0.1`)     |
+| `feat:`                                    | Minor (`1.1.0`)     |
+| `feat!:` / `fix!:` / `BREAKING CHANGE:`    | Major (`2.0.0`)     |
+| `docs:` `chore:` `ci:` `refactor:` `test:` | No release          |
+
+When a releasable commit lands on `main`, the workflow bumps the version,
+updates `CHANGELOG.md`, tags the release, and publishes a GitHub Release with the
+built Chrome zip attached. If no commit warrants a release, the workflow succeeds
+without publishing anything.
+
+Commit messages are linted locally via a Husky `commit-msg` hook, so
+non-conforming messages are rejected before they reach `main`. See
+[CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+
