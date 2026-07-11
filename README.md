@@ -61,5 +61,3 @@ pnpm compile      # typecheck
 
 Built with [WXT](https://wxt.dev) and React. Chrome (Manifest V3) is the current
 target.
-
-
