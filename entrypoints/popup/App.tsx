@@ -78,6 +78,7 @@ function App() {
       profiles: remaining,
       activeProfileId: remaining[0].id,
     });
+    setConfirmDelete(false);
   }
 
   function renameProfile(name: string) {
@@ -335,7 +336,7 @@ function App() {
             </button>
             <button
               className="icon-action danger"
-              onClick={deleteProfile}
+              onClick={() => setConfirmDelete(true)}
               disabled={state.profiles.length <= 1}
               title="Delete profile"
               aria-label="Delete profile"
@@ -408,6 +409,31 @@ function App() {
                 disabled={!importText.trim()}
               >
                 Import
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmDelete && (
+        <div className="modal-backdrop" onClick={() => setConfirmDelete(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Delete profile</h3>
+            <p className="modal-hint">
+              Delete <strong>{active.name}</strong> and its{" "}
+              {active.rules.length}{" "}
+              {active.rules.length === 1 ? "header" : "headers"}? This can't be
+              undone.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="ghost-btn"
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancel
+              </button>
+              <button className="danger-btn" onClick={deleteProfile} autoFocus>
+                Delete
               </button>
             </div>
           </div>

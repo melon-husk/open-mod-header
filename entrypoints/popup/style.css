@@ -674,6 +674,23 @@ input[type="checkbox"] {
   cursor: not-allowed;
 }
 
+.danger-btn {
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--danger);
+  border: none;
+  border-radius: var(--r-control);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.danger-btn:hover {
+  filter: brightness(1.08);
+}
+
 /* ---- Dark mode ---- */
 @media (prefers-color-scheme: dark) {
   :root {
