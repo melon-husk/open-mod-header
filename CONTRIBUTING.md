@@ -58,12 +58,12 @@ pnpm build
 This repository uses **[Conventional Commits](https://www.conventionalcommits.org/)**.
 Commit messages drive automated versioning and releases, so the format matters:
 
-| Prefix              | Effect                                  |
-| ------------------- | --------------------------------------- |
-| `fix:`              | Patch release (e.g. `1.2.3` → `1.2.4`)  |
-| `feat:`             | Minor release (e.g. `1.2.3` → `1.3.0`)  |
-| `feat!:` / `fix!:`  | Major release (breaking change)         |
-| `docs:` `chore:` `refactor:` `test:` `ci:` | No release |
+| Prefix                                     | Effect                                 |
+| ------------------------------------------ | -------------------------------------- |
+| `fix:`                                     | Patch release (e.g. `1.2.3` → `1.2.4`) |
+| `feat:`                                    | Minor release (e.g. `1.2.3` → `1.3.0`) |
+| `feat!:` / `fix!:`                         | Major release (breaking change)        |
+| `docs:` `chore:` `refactor:` `test:` `ci:` | No release                             |
 
 A breaking change can also be signalled with a `BREAKING CHANGE:` footer.
 
