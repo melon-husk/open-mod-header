@@ -15,6 +15,7 @@ function App() {
   const [importText, setImportText] = useState("");
   const [importError, setImportError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [tab, setTab] = useState<HeaderTarget>("request");
 
   useEffect(() => {
     loadState().then(setState);
@@ -138,21 +139,23 @@ function App() {
     }
   }
 
-  function renderSection(target: HeaderTarget, title: string) {
+  function renderPanel(target: HeaderTarget, title: string) {
     const rows = active!.rules.filter((r) => r.target === target);
     const allOn = rows.length > 0 && rows.every((r) => r.enabled);
+    const noun = title.toLowerCase();
 
     return (
       <section className="section">
         <div className="section-head">
-          <input
-            type="checkbox"
-            checked={allOn}
-            disabled={rows.length === 0}
-            onChange={(e) => setSectionEnabled(target, e.target.checked)}
-            title="Enable / disable all in this section"
-          />
-          <h2 className="section-title">{title}</h2>
+          <label className="enable-all">
+            <input
+              type="checkbox"
+              checked={allOn}
+              disabled={rows.length === 0}
+              onChange={(e) => setSectionEnabled(target, e.target.checked)}
+            />
+            <span>Enable all</span>
+          </label>
         </div>
 
         {rows.length > 0 && (
@@ -218,19 +221,23 @@ function App() {
             </div>
           ))}
 
-          {rows.length === 0 && (
-            <p className="empty">No {title.toLowerCase()} yet.</p>
-          )}
+          {rows.length === 0 && <p className="empty">No {noun} yet.</p>}
         </div>
 
         <button className="add-row" onClick={() => addRule(target)}>
-          Add {title.toLowerCase().replace(/s$/, "")}
+          Add {noun.replace(/s$/, "")}
         </button>
       </section>
     );
   }
 
   const activeIndex = state.profiles.findIndex((p) => p.id === active.id);
+  const requestCount = active.rules.filter(
+    (r) => r.target === "request",
+  ).length;
+  const responseCount = active.rules.filter(
+    (r) => r.target === "response",
+  ).length;
 
   return (
     <div className="app">
@@ -345,8 +352,30 @@ function App() {
           </div>
         </div>
 
-        {renderSection("request", "Request headers")}
-        {renderSection("response", "Response headers")}
+        <div className="tabs" role="tablist">
+          <button
+            role="tab"
+            aria-selected={tab === "request"}
+            className={`tab ${tab === "request" ? "active" : ""}`}
+            onClick={() => setTab("request")}
+          >
+            Request
+            <span className="tab-count">{requestCount}</span>
+          </button>
+          <button
+            role="tab"
+            aria-selected={tab === "response"}
+            className={`tab ${tab === "response" ? "active" : ""}`}
+            onClick={() => setTab("response")}
+          >
+            Response
+            <span className="tab-count">{responseCount}</span>
+          </button>
+        </div>
+
+        {tab === "request"
+          ? renderPanel("request", "Request headers")
+          : renderPanel("response", "Response headers")}
       </main>
 
       {importOpen && (

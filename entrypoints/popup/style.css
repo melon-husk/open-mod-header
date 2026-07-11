@@ -315,15 +315,71 @@ body {
   border-color: var(--purple);
 }
 
-/* ---- Section ---- */
+/* ---- Tabs ---- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 4px;
+  background: var(--field);
+  border-radius: 12px;
+}
+
+.tab {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.tab:hover {
+  color: var(--purple-strong);
+}
+
+.tab.active {
+  color: var(--purple-strong);
+  background: var(--card);
+  box-shadow: 0 1px 3px rgba(76, 51, 138, 0.14);
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  background: #e7e3f4;
+  border-radius: 999px;
+}
+
+.tab.active .tab-count {
+  color: #fff;
+  background: var(--purple);
+}
+
+/* ---- Section (tab panel) ---- */
 .section {
   padding: 14px;
   border-radius: 14px;
   background: var(--panel);
-}
-
-.section + .section {
-  margin-top: 12px;
 }
 
 .section-head {
@@ -333,10 +389,14 @@ body {
   margin-bottom: 10px;
 }
 
-.section-title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 650;
+.enable-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
 }
 
 .col-labels {

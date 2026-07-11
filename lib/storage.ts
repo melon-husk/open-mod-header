@@ -1,4 +1,9 @@
-import { STORAGE_KEY, type AppState, type HeaderRule, type Profile } from "./types";
+import {
+  STORAGE_KEY,
+  type AppState,
+  type HeaderRule,
+  type Profile,
+} from "./types";
 
 const LEGACY_KEY = "profile";
 
@@ -64,7 +69,9 @@ export async function saveState(state: AppState): Promise<void> {
 /**
  * Subscribe to state changes in storage. Returns an unsubscribe function.
  */
-export function onStateChanged(callback: (state: AppState) => void): () => void {
+export function onStateChanged(
+  callback: (state: AppState) => void,
+): () => void {
   const listener = (
     changes: Record<string, chrome.storage.StorageChange>,
     areaName: string,
