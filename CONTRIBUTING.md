@@ -51,7 +51,6 @@ pnpm build
 - `lib/storage.ts` — load/save state and state-change events.
 - `lib/dnr.ts` — converts app state into `declarativeNetRequest` rules.
 - `lib/modheader.ts` — ModHeader-compatible import/export.
-- `lib/presets.ts` — built-in presets (e.g. CORS bypass).
 
 ## Commit messages
 

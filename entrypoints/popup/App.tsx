@@ -8,7 +8,6 @@ import {
   saveState,
 } from "@/lib/storage";
 import { exportProfiles, importProfiles } from "@/lib/modheader";
-import { PRESETS, presetToRules, type Preset } from "@/lib/presets";
 
 function App() {
   const [state, setState] = useState<AppState | null>(null);
@@ -20,7 +19,6 @@ function App() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
-  const [presetsOpen, setPresetsOpen] = useState(false);
 
   useEffect(() => {
     loadState().then(setState);
@@ -154,25 +152,6 @@ function App() {
     } catch {
       setImportError("Couldn't read that. Paste a valid ModHeader profile.");
     }
-  }
-
-  function applyPreset(preset: Preset) {
-    const additions = presetToRules(preset);
-    // Replace any existing rule with the same target + name (case-insensitive)
-    // so re-applying refreshes values instead of creating duplicates.
-    const conflict = (r: HeaderRule) =>
-      additions.some(
-        (a) =>
-          a.target === r.target &&
-          a.name.toLowerCase() === r.name.toLowerCase(),
-      );
-    updateActive((p) => ({
-      ...p,
-      rules: [...p.rules.filter((r) => !conflict(r)), ...additions],
-    }));
-    // Show the tab where the preset added headers.
-    setTab(additions[0]?.target ?? "request");
-    setPresetsOpen(false);
   }
 
   function renderPanel(target: HeaderTarget, title: string) {
@@ -333,39 +312,6 @@ function App() {
           ))}
         </div>
         <div className="profile-bar-actions">
-          <div className="presets">
-            <button
-              className="ghost-btn"
-              onClick={() => setPresetsOpen((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={presetsOpen}
-            >
-              Presets
-            </button>
-            {presetsOpen && (
-              <>
-                <div
-                  className="menu-backdrop"
-                  onClick={() => setPresetsOpen(false)}
-                />
-                <div className="menu" role="menu">
-                  {PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      className="menu-item"
-                      role="menuitem"
-                      onClick={() => applyPreset(preset)}
-                    >
-                      <span className="menu-item-name">{preset.name}</span>
-                      <span className="menu-item-desc">
-                        {preset.description}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
           <button className="ghost-btn" onClick={newProfile}>
             + New
           </button>

@@ -22,7 +22,6 @@ supply-chain target. Open ModHeader is built to be safe by design:
 - Modify request and response headers (set or remove)
 - Multiple profiles: switch, rename, duplicate, delete, and drag to reorder
 - Tabbed request/response view with per-row, per-section, and global toggles
-- Presets for common tasks (for example, bypass CORS in one click)
 - Import and export profiles, compatible with ModHeader
 - Light and dark themes that follow your system
 
@@ -36,8 +35,6 @@ supply-chain target. Open ModHeader is built to be safe by design:
    switch.
 4. Group related headers into **profiles** and switch between them. Only the
    active profile is applied.
-5. Use **Presets** for common setups, such as one-click CORS bypass for local
-   development.
 
 Profiles can be copied to the clipboard and pasted into ModHeader (or another
 Open ModHeader install) via **Copy** and **Import**.
@@ -71,12 +68,12 @@ commit messages since the last release and decides what to publish.
 
 Versioning follows [Conventional Commits](https://www.conventionalcommits.org/):
 
-| Commit type                                | Release             |
-| ------------------------------------------ | ------------------- |
-| `fix:`                                     | Patch (`1.0.1`)     |
-| `feat:`                                    | Minor (`1.1.0`)     |
-| `feat!:` / `fix!:` / `BREAKING CHANGE:`    | Major (`2.0.0`)     |
-| `docs:` `chore:` `ci:` `refactor:` `test:` | No release          |
+| Commit type                                | Release         |
+| ------------------------------------------ | --------------- |
+| `fix:`                                     | Patch (`1.0.1`) |
+| `feat:`                                    | Minor (`1.1.0`) |
+| `feat!:` / `fix!:` / `BREAKING CHANGE:`    | Major (`2.0.0`) |
+| `docs:` `chore:` `ci:` `refactor:` `test:` | No release      |
 
 When a releasable commit lands on `main`, the workflow bumps the version,
 updates `CHANGELOG.md`, tags the release, and publishes a GitHub Release with the
@@ -86,4 +83,3 @@ without publishing anything.
 Commit messages are linted locally via a Husky `commit-msg` hook, so
 non-conforming messages are rejected before they reach `main`. See
 [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
-
