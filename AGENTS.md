@@ -31,7 +31,6 @@ request and response headers — a clean-by-design alternative to ModHeader.
 - `lib/storage.ts` — load/save state + change events, legacy migration.
 - `lib/dnr.ts` — `stateToDnrRules(state)` → dynamic rules for the active profile.
 - `lib/modheader.ts` — ModHeader-compatible import/export.
-- `lib/presets.ts` — built-in presets (e.g. CORS bypass).
 
 ## Development
 
