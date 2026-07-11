@@ -3,7 +3,6 @@ import { STORAGE_KEY, type Profile } from "./types";
 export function createDefaultProfile(): Profile {
   return {
     enabled: true,
-    urlFilter: "",
     rules: [],
   };
 }

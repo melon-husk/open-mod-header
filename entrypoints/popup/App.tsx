@@ -17,11 +17,11 @@ function App() {
 
   if (!profile) return <div className="loading">Loading…</div>;
 
-  function addRule() {
+  function addRule(target: HeaderTarget) {
     const rule: HeaderRule = {
       id: createRuleId(),
       enabled: true,
-      target: "request",
+      target,
       op: "set",
       name: "",
       value: "",
@@ -40,93 +40,138 @@ function App() {
     update({ ...profile!, rules: profile!.rules.filter((r) => r.id !== id) });
   }
 
+  function setSectionEnabled(target: HeaderTarget, enabled: boolean) {
+    update({
+      ...profile!,
+      rules: profile!.rules.map((r) =>
+        r.target === target ? { ...r, enabled } : r,
+      ),
+    });
+  }
+
+  function renderSection(target: HeaderTarget, title: string) {
+    const rows = profile!.rules.filter((r) => r.target === target);
+    const allOn = rows.length > 0 && rows.every((r) => r.enabled);
+
+    return (
+      <section className="section">
+        <div className="section-head">
+          <input
+            type="checkbox"
+            checked={allOn}
+            disabled={rows.length === 0}
+            onChange={(e) => setSectionEnabled(target, e.target.checked)}
+            title="Enable / disable all in this section"
+          />
+          <h2 className="section-title">{title}</h2>
+        </div>
+
+        {rows.length > 0 && (
+          <div className="col-labels">
+            <span className="col-name">Name</span>
+            <span className="col-value">Value</span>
+          </div>
+        )}
+
+        <div className="rules">
+          {rows.map((rule) => (
+            <div className="row" key={rule.id}>
+              <input
+                type="checkbox"
+                checked={rule.enabled}
+                onChange={(e) =>
+                  patchRule(rule.id, { enabled: e.target.checked })
+                }
+                title="Enable / disable"
+              />
+              <input
+                className="name"
+                type="text"
+                placeholder="Header name"
+                value={rule.name}
+                onChange={(e) => patchRule(rule.id, { name: e.target.value })}
+              />
+              <input
+                className="value"
+                type="text"
+                placeholder={rule.op === "remove" ? "Removed" : "Value"}
+                value={rule.value}
+                disabled={rule.op === "remove"}
+                onChange={(e) => patchRule(rule.id, { value: e.target.value })}
+              />
+              <select
+                className="op"
+                value={rule.op}
+                onChange={(e) =>
+                  patchRule(rule.id, { op: e.target.value as HeaderRule["op"] })
+                }
+                title="Set or remove this header"
+              >
+                <option value="set">Set</option>
+                <option value="remove">Remove</option>
+              </select>
+              <button
+                className="trash"
+                onClick={() => removeRule(rule.id)}
+                title="Delete"
+                aria-label="Delete header"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          ))}
+
+          {rows.length === 0 && (
+            <p className="empty">No {title.toLowerCase()} yet.</p>
+          )}
+        </div>
+
+        <button className="add-row" onClick={() => addRule(target)}>
+          Add {title.toLowerCase().replace(/s$/, "")}
+        </button>
+      </section>
+    );
+  }
+
   return (
     <div className="app">
       <header className="topbar">
-        <label className="master">
-          <input
-            type="checkbox"
-            checked={profile.enabled}
-            onChange={(e) => update({ ...profile, enabled: e.target.checked })}
-          />
-          <span>{profile.enabled ? "Enabled" : "Disabled"}</span>
+        <div className="brand">
+          <span className="brand-dot" />
+          <span className="brand-name">Open Mod Header</span>
+        </div>
+        <label className="global">
+          <span className="global-label">Global</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={profile.enabled}
+            className={`toggle ${profile.enabled ? "on" : ""}`}
+            onClick={() => update({ ...profile, enabled: !profile.enabled })}
+          >
+            <span className="knob" />
+            <span className="toggle-text">{profile.enabled ? "ON" : "OFF"}</span>
+          </button>
         </label>
-        <h1>Open Mod Header</h1>
       </header>
 
-      <label className="filter">
-        <span>URL filter</span>
-        <input
-          type="text"
-          placeholder="All URLs"
-          value={profile.urlFilter}
-          onChange={(e) => update({ ...profile, urlFilter: e.target.value })}
-        />
-      </label>
+      <main className={`card ${profile.enabled ? "" : "paused"}`}>
+        <div className="card-head">
+          <span className="profile-badge">1</span>
+          <h1 className="card-title">Profile 1</h1>
+        </div>
 
-      <div className="rules">
-        {profile.rules.length === 0 && (
-          <p className="empty">No headers yet. Add one below.</p>
-        )}
-        {profile.rules.map((rule) => (
-          <div className="row" key={rule.id}>
-            <input
-              type="checkbox"
-              checked={rule.enabled}
-              onChange={(e) =>
-                patchRule(rule.id, { enabled: e.target.checked })
-              }
-              title="Enable / disable"
-            />
-            <select
-              value={rule.target}
-              onChange={(e) =>
-                patchRule(rule.id, { target: e.target.value as HeaderTarget })
-              }
-              title="Request or response header"
-            >
-              <option value="request">Req</option>
-              <option value="response">Res</option>
-            </select>
-            <select
-              value={rule.op}
-              onChange={(e) =>
-                patchRule(rule.id, { op: e.target.value as HeaderRule["op"] })
-              }
-              title="Set or remove"
-            >
-              <option value="set">Set</option>
-              <option value="remove">Remove</option>
-            </select>
-            <input
-              className="name"
-              type="text"
-              placeholder="Header name"
-              value={rule.name}
-              onChange={(e) => patchRule(rule.id, { name: e.target.value })}
-            />
-            <input
-              className="value"
-              type="text"
-              placeholder={rule.op === "remove" ? "(removed)" : "Value"}
-              value={rule.value}
-              disabled={rule.op === "remove"}
-              onChange={(e) => patchRule(rule.id, { value: e.target.value })}
-            />
-            <button
-              className="remove"
-              onClick={() => removeRule(rule.id)}
-              title="Delete row"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <button className="add" onClick={addRule}>
-        + Add header
-      </button>
+        {renderSection("request", "Request headers")}
+        {renderSection("response", "Response headers")}
+      </main>
     </div>
   );
 }

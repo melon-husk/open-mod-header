@@ -36,9 +36,6 @@ export function profileToDnrRules(
 
     const condition: chrome.declarativeNetRequest.RuleCondition = {
       resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-      ...(profile.urlFilter.trim()
-        ? { urlFilter: profile.urlFilter.trim() }
-        : {}),
     };
 
     rules.push({

@@ -14,11 +14,6 @@ export interface HeaderRule {
 export interface Profile {
   /** Master toggle for the whole profile. */
   enabled: boolean;
-  /**
-   * declarativeNetRequest urlFilter applied to every rule.
-   * Empty string matches all URLs.
-   */
-  urlFilter: string;
   rules: HeaderRule[];
 }
 
