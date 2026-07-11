@@ -158,7 +158,9 @@ function App() {
             onClick={() => update({ ...profile, enabled: !profile.enabled })}
           >
             <span className="knob" />
-            <span className="toggle-text">{profile.enabled ? "ON" : "OFF"}</span>
+            <span className="toggle-text">
+              {profile.enabled ? "ON" : "OFF"}
+            </span>
           </button>
         </label>
       </header>
