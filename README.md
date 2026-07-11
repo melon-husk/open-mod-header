@@ -1,6 +1,6 @@
-# Open Mod Header
+# Open ModHeader
 
-![Open Mod Header](./open-modheader.png)
+![Open ModHeader](./open-modheader.png)
 
 An open source, auditable tool to modify HTTP request and response headers. A
 clean-by-design alternative to ModHeader, with no tracking, no telemetry, and no
@@ -9,7 +9,7 @@ header hoarding.
 ## Why
 
 Header tools need broad access to your traffic, which makes them a high-value
-supply-chain target. Open Mod Header is built to be safe by design:
+supply-chain target. Open ModHeader is built to be safe by design:
 
 - **`declarativeNetRequest` only.** The browser applies your rules; the
   extension never reads your traffic.
@@ -40,11 +40,11 @@ supply-chain target. Open Mod Header is built to be safe by design:
    development.
 
 Profiles can be copied to the clipboard and pasted into ModHeader (or another
-Open Mod Header install) via **Copy** and **Import**.
+Open ModHeader install) via **Copy** and **Import**.
 
 ## Background
 
-Open Mod Header exists because a trusted header extension can quietly turn into a
+Open ModHeader exists because a trusted header extension can quietly turn into a
 liability. In 2026, a popular header tool was pulled from the Chrome Web Store
 after a hidden data-collection SDK was found in a signed release. This project
 takes the opposite stance: minimal permissions, no network access, and source
