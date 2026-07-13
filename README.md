@@ -6,6 +6,8 @@ An open source, auditable tool to modify HTTP request and response headers. A
 clean-by-design alternative to ModHeader, with no tracking, no telemetry, and no
 header hoarding.
 
+**[Install from the Chrome Web Store →](https://chromewebstore.google.com/detail/open-modheader/ggkoalhonillnaanakakfgjamcklphkk)**
+
 ## Why
 
 Header tools need broad access to your traffic, which makes them a high-value
