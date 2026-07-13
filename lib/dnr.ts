@@ -55,8 +55,22 @@ export function stateToDnrRules(
 
 /**
  * Replace all existing dynamic rules with the ones derived from the state.
+ *
+ * Calls are serialized: declarativeNetRequest.updateDynamicRules reads the
+ * current dynamic rules to compute which IDs to remove, so two overlapping
+ * syncs could otherwise both add a rule with the same ID and fail with
+ * "Rule with id N does not have a unique ID".
  */
-export async function syncDynamicRules(state: AppState): Promise<void> {
+let syncQueue: Promise<void> = Promise.resolve();
+
+export function syncDynamicRules(state: AppState): Promise<void> {
+  const run = syncQueue.then(() => applySync(state));
+  // Keep the queue chained even if a sync fails, so later syncs still run.
+  syncQueue = run.catch(() => {});
+  return run;
+}
+
+async function applySync(state: AppState): Promise<void> {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing.map((r) => r.id);
   const addRules = stateToDnrRules(state);
