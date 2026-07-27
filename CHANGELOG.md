@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/melon-husk/open-mod-header/compare/v1.2.0...v1.2.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **background:** apply badge and rules on browser startup ([bfc1fdd](https://github.com/melon-husk/open-mod-header/commit/bfc1fdd97a354b100f05a111d92f6056487aea7a))
+
 # [1.2.0](https://github.com/melon-husk/open-mod-header/compare/v1.1.1...v1.2.0) (2026-07-23)
 
 
