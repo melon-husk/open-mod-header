@@ -26,16 +26,25 @@ function updateBadge(state: AppState): void {
   });
 }
 
+function applyState(state: AppState): void {
+  syncDynamicRules(state);
+  updateBadge(state);
+}
+
 export default defineBackground(() => {
-  // Apply saved rules on startup / install.
-  loadState().then((state) => {
-    syncDynamicRules(state);
-    updateBadge(state);
+  // Apply saved rules whenever this service worker spins up (install/update,
+  // or woken by an event below).
+  loadState().then(applyState);
+
+  // declarativeNetRequest enforces rules without waking the service worker,
+  // so nothing else would run the line above on a fresh browser launch —
+  // the badge would stay blank until the next storage write. Registering
+  // onStartup makes Chrome wake this worker on launch so the badge and
+  // rules apply immediately.
+  chrome.runtime.onStartup.addListener(() => {
+    loadState().then(applyState);
   });
 
   // Keep dynamic rules and badge in sync whenever the state changes.
-  onStateChanged((state) => {
-    syncDynamicRules(state);
-    updateBadge(state);
-  });
+  onStateChanged(applyState);
 });
