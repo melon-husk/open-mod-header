@@ -8,6 +8,40 @@ import {
   saveState,
 } from "@/lib/storage";
 import { exportProfiles, importProfiles } from "@/lib/modheader";
+import { TourOverlay, type TourStep } from "./TourOverlay";
+
+const TOUR_STEPS: TourStep[] = [
+  {
+    selector: ".global",
+    title: "Global Toggle",
+    text: "Enable or disable all header modifications with this master switch. Handy for pausing the extension instantly.",
+    placement: "bottom-right",
+  },
+  {
+    selector: ".profile-bar",
+    title: "Profile Management",
+    text: "Create, switch, or import profiles to group your headers. Drag and drop profiles to reorder them.",
+    placement: "bottom",
+  },
+  {
+    selector: ".card-head",
+    title: "Active Profile",
+    text: "Configure the active profile. Rename, copy, duplicate, or delete it using these workspace actions.",
+    placement: "bottom",
+  },
+  {
+    selector: ".tabs",
+    title: "Request vs Response",
+    text: "Switch between Request headers (headers sent to servers) and Response headers (headers received from servers).",
+    placement: "bottom",
+  },
+  {
+    selector: ".add-row",
+    title: "Rules & Actions",
+    text: "Add a new rule to inject, modify, or remove headers. Toggle individual rules on or off using their checkboxes.",
+    placement: "top",
+  },
+];
 
 function App() {
   const [state, setState] = useState<AppState | null>(null);
@@ -20,8 +54,17 @@ function App() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+
   useEffect(() => {
-    loadState().then(setState);
+    loadState().then((s) => {
+      setState(s);
+      if (!s.hasCompletedTour) {
+        setTourActive(true);
+        setTourStep(0);
+      }
+    });
   }, []);
 
   const active = useMemo(
@@ -154,6 +197,63 @@ function App() {
     }
   }
 
+  function startTour() {
+    setTourActive(true);
+    setTourStep(0);
+  }
+
+  function completeTour() {
+    setTourActive(false);
+    if (state) {
+      commit({ ...state, hasCompletedTour: true });
+    }
+  }
+
+  function nextTourStep() {
+    if (tourStep === TOUR_STEPS.length - 1) {
+      completeTour();
+    } else {
+      setTourStep((prev) => prev + 1);
+    }
+  }
+
+  function prevTourStep() {
+    setTourStep((prev) => Math.max(0, prev - 1));
+  }
+
+  function reloadSampleRules() {
+    const samples: HeaderRule[] = [
+      {
+        id: createId(),
+        enabled: false,
+        target: "request",
+        op: "set",
+        name: "X-Developer-Mode",
+        value: "true",
+      },
+      {
+        id: createId(),
+        enabled: false,
+        target: "request",
+        op: "set",
+        name: "Authorization",
+        value: "Bearer sample_token_123",
+      },
+      {
+        id: createId(),
+        enabled: false,
+        target: "response",
+        op: "set",
+        name: "Cache-Control",
+        value: "no-cache",
+      },
+    ];
+    updateActive((p) => ({
+      ...p,
+      rules: [...p.rules, ...samples],
+    }));
+  }
+
   function renderPanel(target: HeaderTarget, title: string) {
     const rows = active!.rules.filter((r) => r.target === target);
     const allOn = rows.length > 0 && rows.every((r) => r.enabled);
@@ -236,7 +336,19 @@ function App() {
             </div>
           ))}
 
-          {rows.length === 0 && <p className="empty">No {noun} yet.</p>}
+          {rows.length === 0 && (
+            <div className="empty-state">
+              <p className="empty">No {noun} yet.</p>
+              <div className="empty-actions">
+                <button className="ghost-btn" onClick={reloadSampleRules}>
+                  Reload Sample Rules
+                </button>
+                <button className="ghost-btn" onClick={startTour}>
+                  Restart Tour
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <button className="add-row" onClick={() => addRule(target)}>
@@ -312,6 +424,9 @@ function App() {
           ))}
         </div>
         <div className="profile-bar-actions">
+          <button className="ghost-btn" onClick={startTour}>
+            Tour
+          </button>
           <button className="ghost-btn" onClick={newProfile}>
             + New
           </button>
@@ -469,6 +584,16 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {tourActive && (
+        <TourOverlay
+          activeStep={tourStep}
+          steps={TOUR_STEPS}
+          onNext={nextTourStep}
+          onPrev={prevTourStep}
+          onDismiss={completeTour}
+        />
       )}
     </div>
   );
