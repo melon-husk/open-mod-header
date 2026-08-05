@@ -743,3 +743,23 @@ input[type="checkbox"] {
     transition: none !important;
   }
 }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  text-align: center;
+  gap: 12px;
+}
+
+.empty-state .empty {
+  padding: 0;
+  margin: 0;
+}
+
+.empty-actions {
+  display: flex;
+  gap: 8px;
+}

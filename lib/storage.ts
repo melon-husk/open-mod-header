@@ -20,10 +20,37 @@ export function createProfile(name: string): Profile {
 
 export function createDefaultState(): AppState {
   const profile = createProfile("Profile 1");
+  profile.rules = [
+    {
+      id: createId(),
+      enabled: false,
+      target: "request",
+      op: "set",
+      name: "X-Developer-Mode",
+      value: "true",
+    },
+    {
+      id: createId(),
+      enabled: false,
+      target: "request",
+      op: "set",
+      name: "Authorization",
+      value: "Bearer sample_token_123",
+    },
+    {
+      id: createId(),
+      enabled: false,
+      target: "response",
+      op: "set",
+      name: "Cache-Control",
+      value: "no-cache",
+    },
+  ];
   return {
     globalEnabled: true,
     activeProfileId: profile.id,
     profiles: [profile],
+    hasCompletedTour: false,
   };
 }
 
