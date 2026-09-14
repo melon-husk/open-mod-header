@@ -36,17 +36,21 @@ request and response headers — a clean-by-design alternative to ModHeader.
 
 ```sh
 pnpm install
-pnpm dev        # run in Chrome
-pnpm compile    # typecheck (tsc --noEmit)
-pnpm build      # production build
-pnpm zip        # package Chrome extension into .output/
+pnpm dev           # run in Chrome
+pnpm dev:firefox   # run in Firefox
+pnpm compile       # typecheck (tsc --noEmit)
+pnpm build         # production build for Chrome
+pnpm build:firefox # production build for Firefox
+pnpm zip           # package Chrome extension into .output/
+pnpm zip:firefox   # package Firefox extension into .output/
 ```
 
-Before finishing any change, ensure both pass:
+Before finishing any change, ensure all pass:
 
 ```sh
 pnpm compile
 pnpm build
+pnpm build:firefox
 ```
 
 ## Commit conventions (REQUIRED)
@@ -100,4 +104,4 @@ Rules for agents when committing:
 
 Releases are fully automated. On merge to `main`, semantic-release analyzes the
 commits, bumps the version, updates `CHANGELOG.md`, and publishes a GitHub
-Release with the Chrome zip attached. Never bump the version or tag manually.
+Release with both Chrome and Firefox zips attached. Never bump the version or tag manually.
