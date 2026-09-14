@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppState, HeaderRule, HeaderTarget, Profile } from "@/lib/types";
 import {
   createId,
@@ -8,6 +8,106 @@ import {
   saveState,
 } from "@/lib/storage";
 import { exportProfiles, importProfiles } from "@/lib/modheader";
+
+function Modal({
+  titleId,
+  title,
+  isOpen,
+  onClose,
+  children,
+}: {
+  titleId: string;
+  title: string;
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    const getFocusable = () => {
+      if (!modalRef.current) return [];
+      return Array.from(
+        modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+    };
+
+    const focusables = getFocusable();
+    if (focusables.length > 0) {
+      focusables[0].focus();
+    } else if (modalRef.current) {
+      modalRef.current.focus();
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === "Tab") {
+        const elements = getFocusable();
+        if (elements.length === 0) return;
+
+        const first = elements[0];
+        const last = elements[elements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      previousActiveElement.current?.focus();
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        ref={modalRef}
+        tabIndex={-1}
+      >
+        <h3 id={titleId} className="modal-title">
+          {title}
+        </h3>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function App() {
   const [state, setState] = useState<AppState | null>(null);
@@ -160,7 +260,13 @@ function App() {
     const noun = title.toLowerCase();
 
     return (
-      <section className="section">
+      <section
+        className="section"
+        role="tabpanel"
+        id={`panel-${target}`}
+        aria-labelledby={`tab-${target}`}
+        tabIndex={0}
+      >
         <div className="section-head">
           <label className="enable-all">
             <input
@@ -168,6 +274,7 @@ function App() {
               checked={allOn}
               disabled={rows.length === 0}
               onChange={(e) => setSectionEnabled(target, e.target.checked)}
+              aria-label={`Enable all ${noun}`}
             />
             <span>Enable all</span>
           </label>
@@ -181,7 +288,7 @@ function App() {
         )}
 
         <div className="rules">
-          {rows.map((rule) => (
+          {rows.map((rule, idx) => (
             <div className="row" key={rule.id}>
               <input
                 type="checkbox"
@@ -190,6 +297,7 @@ function App() {
                   patchRule(rule.id, { enabled: e.target.checked })
                 }
                 title="Enable / disable"
+                aria-label={`Enable ${target} rule ${idx + 1}`}
               />
               <input
                 className="name"
@@ -197,6 +305,7 @@ function App() {
                 placeholder="Header name"
                 value={rule.name}
                 onChange={(e) => patchRule(rule.id, { name: e.target.value })}
+                aria-label={`${title} rule ${idx + 1} name`}
               />
               <input
                 className="value"
@@ -205,6 +314,7 @@ function App() {
                 value={rule.value}
                 disabled={rule.op === "remove"}
                 onChange={(e) => patchRule(rule.id, { value: e.target.value })}
+                aria-label={`${title} rule ${idx + 1} value`}
               />
               <select
                 className="op"
@@ -213,6 +323,7 @@ function App() {
                   patchRule(rule.id, { op: e.target.value as HeaderRule["op"] })
                 }
                 title="Set or remove this header"
+                aria-label={`${title} rule ${idx + 1} operation`}
               >
                 <option value="set">Set</option>
                 <option value="remove">Remove</option>
@@ -221,7 +332,7 @@ function App() {
                 className="trash"
                 onClick={() => removeRule(rule.id)}
                 title="Delete"
-                aria-label="Delete header"
+                aria-label={`Delete ${target} rule ${idx + 1}`}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path
@@ -261,11 +372,15 @@ function App() {
           <span className="brand-dot" />
           <span className="brand-name">Open ModHeader</span>
         </div>
-        <label className="global">
-          <span className="global-label">Global</span>
+        <div className="global">
+          <span id="global-toggle-label" className="global-label">
+            Global
+          </span>
           <button
             type="button"
             role="switch"
+            id="global-switch"
+            aria-labelledby="global-toggle-label"
             aria-checked={state.globalEnabled}
             className={`toggle ${state.globalEnabled ? "on" : ""}`}
             onClick={() =>
@@ -277,12 +392,12 @@ function App() {
               {state.globalEnabled ? "ON" : "OFF"}
             </span>
           </button>
-        </label>
+        </div>
       </header>
 
-      <nav className="profile-bar">
+      <nav className="profile-bar" aria-label="Profile tabs">
         <div className="chips">
-          {state.profiles.map((p) => (
+          {state.profiles.map((p, index) => (
             <button
               key={p.id}
               className={`chip ${p.id === active.id ? "active" : ""} ${
@@ -290,6 +405,22 @@ function App() {
               } ${dragOverId === p.id ? "drag-over" : ""}`}
               onClick={() => switchProfile(p.id)}
               title={p.name}
+              aria-label={`Profile ${p.name}, ${index + 1} of ${
+                state.profiles.length
+              }. Press Alt+Left or Alt+Right to reorder.`}
+              onKeyDown={(e) => {
+                if ((e.altKey || e.metaKey) && e.key === "ArrowLeft") {
+                  e.preventDefault();
+                  if (index > 0) {
+                    reorderProfiles(p.id, state.profiles[index - 1].id);
+                  }
+                } else if ((e.altKey || e.metaKey) && e.key === "ArrowRight") {
+                  e.preventDefault();
+                  if (index < state.profiles.length - 1) {
+                    reorderProfiles(p.id, state.profiles[index + 1].id);
+                  }
+                }
+              }}
               draggable
               onDragStart={() => setDragId(p.id)}
               onDragOver={(e) => {
@@ -338,6 +469,48 @@ function App() {
             aria-label="Profile name"
           />
           <div className="card-actions">
+            <button
+              className="icon-action"
+              onClick={() => {
+                if (activeIndex > 0) {
+                  reorderProfiles(active.id, state.profiles[activeIndex - 1].id);
+                }
+              }}
+              disabled={activeIndex === 0}
+              title="Move profile left"
+              aria-label="Move profile left"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M15 19l-7-7 7-7"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              className="icon-action"
+              onClick={() => {
+                if (activeIndex < state.profiles.length - 1) {
+                  reorderProfiles(active.id, state.profiles[activeIndex + 1].id);
+                }
+              }}
+              disabled={activeIndex === state.profiles.length - 1}
+              title="Move profile right"
+              aria-label="Move profile right"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 5l7 7-7 7"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
             <button className="ghost-btn" onClick={copyProfile}>
               {copied ? "Copied" : "Copy"}
             </button>
@@ -385,21 +558,41 @@ function App() {
           </div>
         </div>
 
-        <div className="tabs" role="tablist">
+        <div className="tabs" role="tablist" aria-label="Header types">
           <button
             role="tab"
+            id="tab-request"
             aria-selected={tab === "request"}
+            aria-controls="panel-request"
+            tabIndex={tab === "request" ? 0 : -1}
             className={`tab ${tab === "request" ? "active" : ""}`}
             onClick={() => setTab("request")}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                setTab("response");
+                document.getElementById("tab-response")?.focus();
+              }
+            }}
           >
             Request
             <span className="tab-count">{requestCount}</span>
           </button>
           <button
             role="tab"
+            id="tab-response"
             aria-selected={tab === "response"}
+            aria-controls="panel-response"
+            tabIndex={tab === "response" ? 0 : -1}
             className={`tab ${tab === "response" ? "active" : ""}`}
             onClick={() => setTab("response")}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                setTab("request");
+                document.getElementById("tab-request")?.focus();
+              }
+            }}
           >
             Response
             <span className="tab-count">{responseCount}</span>
@@ -411,65 +604,65 @@ function App() {
           : renderPanel("response", "Response headers")}
       </main>
 
-      {importOpen && (
-        <div className="modal-backdrop" onClick={() => setImportOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-title">Import profile</h3>
-            <p className="modal-hint">
-              Paste a ModHeader profile (or an Open ModHeader export).
-            </p>
-            <textarea
-              className="import-text"
-              value={importText}
-              onChange={(e) => setImportText(e.target.value)}
-              placeholder='[{"headers":[…],"title":"Profile 1","version":2}]'
-              rows={6}
-              autoFocus
-            />
-            {importError && <p className="modal-error">{importError}</p>}
-            <div className="modal-actions">
-              <button
-                className="ghost-btn"
-                onClick={() => setImportOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="primary-btn"
-                onClick={runImport}
-                disabled={!importText.trim()}
-              >
-                Import
-              </button>
-            </div>
-          </div>
+      <Modal
+        titleId="import-modal-title"
+        title="Import profile"
+        isOpen={importOpen}
+        onClose={() => setImportOpen(false)}
+      >
+        <p className="modal-hint">
+          Paste a ModHeader profile (or an Open ModHeader export).
+        </p>
+        <textarea
+          className="import-text"
+          value={importText}
+          onChange={(e) => setImportText(e.target.value)}
+          placeholder='[{"headers":[…],"title":"Profile 1","version":2}]'
+          rows={6}
+          aria-label="ModHeader profile JSON import"
+        />
+        {importError && <p className="modal-error">{importError}</p>}
+        <div className="modal-actions">
+          <button
+            className="ghost-btn"
+            onClick={() => setImportOpen(false)}
+          >
+            Cancel
+          </button>
+          <button
+            className="primary-btn"
+            onClick={runImport}
+            disabled={!importText.trim()}
+          >
+            Import
+          </button>
         </div>
-      )}
+      </Modal>
 
-      {confirmDelete && (
-        <div className="modal-backdrop" onClick={() => setConfirmDelete(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-title">Delete profile</h3>
-            <p className="modal-hint">
-              Delete <strong>{active.name}</strong> and its{" "}
-              {active.rules.length}{" "}
-              {active.rules.length === 1 ? "header" : "headers"}? This can't be
-              undone.
-            </p>
-            <div className="modal-actions">
-              <button
-                className="ghost-btn"
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancel
-              </button>
-              <button className="danger-btn" onClick={deleteProfile} autoFocus>
-                Delete
-              </button>
-            </div>
-          </div>
+      <Modal
+        titleId="delete-modal-title"
+        title="Delete profile"
+        isOpen={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+      >
+        <p className="modal-hint">
+          Delete <strong>{active.name}</strong> and its{" "}
+          {active.rules.length}{" "}
+          {active.rules.length === 1 ? "header" : "headers"}? This can't be
+          undone.
+        </p>
+        <div className="modal-actions">
+          <button
+            className="ghost-btn"
+            onClick={() => setConfirmDelete(false)}
+          >
+            Cancel
+          </button>
+          <button className="danger-btn" onClick={deleteProfile}>
+            Delete
+          </button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
