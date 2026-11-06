@@ -13,7 +13,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "pnpm zip"
+        "prepareCmd": "pnpm zip && pnpm zip:firefox"
       }
     ],
     [
@@ -30,6 +30,10 @@
           {
             "path": ".output/*-chrome.zip",
             "label": "Chrome extension (v${nextRelease.version})"
+          },
+          {
+            "path": ".output/*-firefox.zip",
+            "label": "Firefox extension (v${nextRelease.version})"
           }
         ]
       }

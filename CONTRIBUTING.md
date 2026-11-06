@@ -24,23 +24,32 @@ Requirements: [Node.js](https://nodejs.org/) 20+ and [pnpm](https://pnpm.io/) 10
 
 ```sh
 pnpm install
-pnpm dev          # run in Chrome (WXT dev server)
-pnpm dev:firefox  # run in Firefox
+
+# Development server with hot reloading
+pnpm dev          # Run in Chrome / Chromium (Edge, Brave)
+pnpm dev:firefox  # Run in Firefox
 ```
 
 ## Development workflow
 
 ```sh
-pnpm compile   # typecheck (tsc --noEmit)
-pnpm build     # production build
-pnpm zip       # package the Chrome extension into .output/
+pnpm compile       # Typecheck (tsc --noEmit)
+
+# Production builds
+pnpm build         # Production build for Chrome / Chromium
+pnpm build:firefox # Production build for Firefox
+
+# Extension packaging
+pnpm zip           # Package Chrome extension into .output/
+pnpm zip:firefox   # Package Firefox extension into .output/
 ```
 
-Before opening a pull request, make sure both of these pass:
+Before opening a pull request, make sure type checking and production builds pass for all targets:
 
 ```sh
 pnpm compile
 pnpm build
+pnpm build:firefox
 ```
 
 ### Project structure
@@ -81,7 +90,7 @@ format, since that becomes the commit recorded on `main`.
 
 1. Fork the repo and create a branch from `main`.
 2. Make your change, keeping it focused and small where possible.
-3. Run `pnpm compile` and `pnpm build`.
+3. Run `pnpm compile`, `pnpm build`, and `pnpm build:firefox`.
 4. Open a PR with a clear description of the what and why. Note any permission
    or data-handling implications explicitly.
 
@@ -90,7 +99,7 @@ format, since that becomes the commit recorded on `main`.
 Releases are automated. When commits are merged to `main`,
 [semantic-release](https://semantic-release.gitbook.io/) analyzes the commit
 messages, bumps the version, generates release notes, and publishes a GitHub
-Release with the Chrome zip attached. You do not need to bump versions or tag
+Release with both Chrome and Firefox build zip packages attached (`.output/*-chrome.zip` and `.output/*-firefox.zip`). You do not need to bump versions or tag
 releases manually.
 
 ## Reporting issues

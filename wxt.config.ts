@@ -3,6 +3,9 @@ import { defineConfig } from "wxt";
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ["@wxt-dev/module-react"],
+  suppressWarnings: {
+    firefoxDataCollection: true,
+  },
   manifest: {
     name: "Open ModHeader",
     description:
@@ -13,5 +16,10 @@ export default defineConfig({
     // Required for declarativeNetRequest header modification. Used ONLY to apply
     // your rules to matching requests — never to read or exfiltrate traffic.
     host_permissions: ["<all_urls>"],
+    browser_specific_settings: {
+      gecko: {
+        id: "open-modheader@open-modheader.org",
+      },
+    },
   },
 });
