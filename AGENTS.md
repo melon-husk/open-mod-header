@@ -38,16 +38,27 @@ request and response headers — a clean-by-design alternative to ModHeader.
 pnpm install
 pnpm dev        # run in Chrome
 pnpm compile    # typecheck (tsc --noEmit)
+pnpm lint:a11y # static accessibility linting (eslint)
 pnpm build      # production build
 pnpm zip        # package Chrome extension into .output/
 ```
 
-Before finishing any change, ensure both pass:
+Before finishing any change, ensure all pass:
 
 ```sh
 pnpm compile
+pnpm lint:a11y
 pnpm build
 ```
+
+## Accessibility Standards (WCAG 2.1 AA)
+
+All AI agents working on UI elements in this repository must ensure compliance with WCAG 2.1 AA standards:
+- **ARIA Patterns:** Correctly apply `role="dialog"`, `aria-modal="true"`, `role="tablist"`, `role="tab"`, `role="tabpanel"`, and `role="switch"` with proper attributes.
+- **Focus Management:** Modals must trap focus while open, support closing via `Escape`, and return focus to the trigger element on close.
+- **Accessible Names:** Form controls, input fields, selects, and icon buttons must have explicit accessible names (`aria-label`, `aria-labelledby`, or `<label>`).
+- **Keyboard Reordering:** Interactive list controls (such as profile tabs) must support keyboard-driven reordering controls.
+- **Verification:** Execute `pnpm lint:a11y` to verify zero static accessibility linting violations.
 
 ## Commit conventions (REQUIRED)
 

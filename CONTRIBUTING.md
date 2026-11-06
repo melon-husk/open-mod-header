@@ -32,16 +32,42 @@ pnpm dev:firefox  # run in Firefox
 
 ```sh
 pnpm compile   # typecheck (tsc --noEmit)
+pnpm lint:a11y # static accessibility linting (eslint)
 pnpm build     # production build
 pnpm zip       # package the Chrome extension into .output/
 ```
 
-Before opening a pull request, make sure both of these pass:
+Before opening a pull request, make sure all of these pass:
 
 ```sh
 pnpm compile
+pnpm lint:a11y
 pnpm build
 ```
+
+## Accessibility Standards (WCAG 2.1 AA)
+
+All user interface components in Open ModHeader must strictly conform to WCAG 2.1 Level AA accessibility standards.
+
+### Core Guidelines
+- **Color Contrast:** Text and interactive elements must maintain a contrast ratio of at least 4.5:1 against their backgrounds (3:1 for large text and UI components/badges).
+- **Keyboard Navigation:** All interactive elements must be focusable and operable using keyboard controls (`Tab`, `Shift+Tab`, `Enter`, `Space`, `Escape`, arrow keys).
+- **Focus Indicators:** Focus rings (`:focus-visible`) must be visible for keyboard users.
+- **Accessible Names:** Form controls, input rows, selects, and icon buttons must expose explicit accessible names via `<label>`, `aria-label`, or `aria-labelledby`. Placeholders alone do not satisfy accessible name requirements.
+
+### ARIA Implementation Patterns
+- **Switch Controls (`role="switch"`):** Use `role="switch"`, `aria-checked`, and link to an explicit text label via `aria-labelledby` or `aria-label`.
+- **Tabs & Tabpanels:**
+  - Tablist container uses `role="tablist"` with an `aria-label`.
+  - Tab buttons use `role="tab"`, `id`, `aria-selected`, `aria-controls` (pointing to the panel `id`), and roving `tabIndex` (`0` for active tab, `-1` for inactive). Arrow keys switch tabs.
+  - Tabpanels use `role="tabpanel"`, `id`, `aria-labelledby` (pointing to tab `id`), and `tabIndex={0}`.
+- **Modal Dialogs:**
+  - Container uses `role="dialog"`, `aria-modal="true"`, and `aria-labelledby` (pointing to the dialog title element `id`).
+  - Dialogs trap keyboard focus inside active content while open, handle `Escape` key to close, and restore focus to the trigger element upon closing.
+- **List Reordering:** Interactive list items (such as profile chips) must support keyboard-driven reordering (e.g., `Alt + ArrowLeft` / `Alt + ArrowRight` or move left/right controls) with position announcements for screen readers.
+
+### Verification
+Run `pnpm lint:a11y` locally before submitting code to ensure zero static accessibility lint violations.
 
 ### Project structure
 
