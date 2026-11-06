@@ -23,6 +23,7 @@ export interface AppState {
   /** id of the profile currently applied. */
   activeProfileId: string;
   profiles: Profile[];
+  hasCompletedTour?: boolean;
 }
 
 export const STORAGE_KEY = "state";
